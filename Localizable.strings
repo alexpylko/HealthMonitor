@@ -1,0 +1,14 @@
+/* 
+  Localizable.strings
+  HealthMonitor
+
+  Created by Oleksii Pylko on 10/04/16.
+  Copyright © 2016 Oleksii Pylko. All rights reserved.
+*/
+
+"Bluetooth.PoweredOn" = "Bluetooth is currently powered on and available to use";
+"Bluetooth.PoweredOff" = "Bluetooth is currently powered off";
+"Bluetooth.Unauthorized" = "The app is not authorized to use Bluetooth low energy";
+"Bluetooth.Unsupported" = "The platform does not support Bluetooth low energy";
+"Bluetooth.Resetting" = "The connection with the system service was momentarily lost; an update is imminent";
+"Bluetooth.Unknown" = "The current state of the central manager is unknown; an update is imminent";

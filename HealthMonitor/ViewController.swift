@@ -7,19 +7,39 @@
 //
 
 import UIKit
+import CoreBluetooth
 
 class ViewController: UIViewController {
 
+    var heartRateMonitor: HeartRateMonitor?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        setupHeartRateMonitor()
+    }
+    
+    func setupHeartRateMonitor() {
+        heartRateMonitor = HeartRateMonitor(delegate: self)
     }
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
     }
-
-
+    
 }
 
+extension ViewController: HeartRateMonitorDelegate {
+    
+    func didChangeHeartRate(value: UInt16) {
+        print("Heart Rate: \(value) bpm")
+    }
+    
+    func didChangeBatteryLevel(value: UInt8) {
+        print("Battery Level: \(value)")
+    }
+    
+    func didChangeBodySensorLocation(value: UInt8) {
+        print("Body Sensor Location: \(value)")
+    }
+    
+}
