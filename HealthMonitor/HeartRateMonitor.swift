@@ -9,38 +9,59 @@
 import Foundation
 import CoreBluetooth
 
-@objc protocol HeartRateMonitorDelegate {
-    optional func didChangeHeartRate(value: UInt16)
-    optional func didChangeBatteryLevel(value: UInt8)
-    optional func didChangeBodySensorLocation(value: UInt8)
-}
-
 class HeartRateMonitor : NSObject {
+
+    // MARK: - Properties
     
+    /// The restore identifier of the Heart Rate Monitor
     static var centralManagerIdentifier = "HeartRateCentralManagerIdentifier"
     
+    /// The delegate of the Heart Rate Monitor
     var delegate: HeartRateMonitorDelegate?
     
-    var centralManager:CBCentralManager!
+    private var centralManager:CBCentralManager!
     
-    var peripheral:CBPeripheral?
-    var peripheralIdentifiers: [NSUUID] = []
+    private var peripheral:CBPeripheral?
     
-    init(delegate: HeartRateMonitorDelegate) {
+    private var peripheralIdentifiers: [NSUUID] = []
+    
+    init(delegate: HeartRateMonitorDelegate?) {
         super.init()
         self.delegate = delegate
-        setup()
     }
-    
+}
+
+private extension HeartRateMonitor {
+
+    // MARK: - Private methods
+
+    /**
+        Set up Central Manager
+     */
     func setup() {
         centralManager = CBCentralManager(delegate: self, queue: nil, options: [CBCentralManagerOptionRestoreIdentifierKey: HeartRateMonitor.centralManagerIdentifier])
     }
     
-}
+    /**
+        Used to represent discovered peripheral services
+    */
+    enum Service : String, UUIDStringable {
+        case DeviceInformation = "180A"
+        case HeartRate = "180D"
+        case Battery = "180F"
+        static var UUIDS: [CBUUID] {
+            return [
+                DeviceInformation.UUID,
+                HeartRate.UUID,
+                Battery.UUID
+            ]
+        }
+    }
 
-extension HeartRateMonitor : CBPeripheralDelegate {
-    
-    enum HeartRateCharacteristic : String, UUIDStringable {
+    /**
+        Used to represent interested characteristics of the peripheral services
+     */
+    enum Characteristic : String, UUIDStringable {
         case HeartRateMeasurement = "2A37"
         case BodySensorLocation = "2A38"
         case BatteryLevel = "2A19"
@@ -52,23 +73,63 @@ extension HeartRateMonitor : CBPeripheralDelegate {
         }
     }
     
-    func observedServiceCharacteristics(service: CBService) -> [CBUUID]? {
-        switch ServiceUUID(rawValue: service.UUID.UUIDString)! {
-        case .HeartRate:
-            return HeartRateCharacteristic.UUIDS
-        case .DeviceInformation:
-            return nil
-        default:
-            return nil
+    func startScan2() {
+        let knownPeripherals = centralManager.retrievePeripheralsWithIdentifiers(peripheralIdentifiers)
+        if knownPeripherals.count > 0 {
+            if let peripheral = knownPeripherals.first {
+                connectToPeripheral(peripheral)
+            }
         }
     }
     
-    func peripheral(peripheral: CBPeripheral, didDiscoverServices error: NSError?) {
-        guard let services = peripheral.services else {
-            return print("Error!")
-        }
-        for service in services {
-            peripheral.discoverCharacteristics(observedServiceCharacteristics(service), forService: service)
+    /**
+        Start peripherals discovering
+     */
+    func startScan() {
+        centralManager.scanForPeripheralsWithServices(Service.UUIDS, options: nil)
+    }
+
+    /**
+        Stop peripherals discovering
+     */
+    func stopScan() {
+        centralManager.stopScan()
+    }
+
+    /**
+        Connect to a peripheral
+        
+        - parameter peripheral: A peripheral
+     */
+    func connectToPeripheral(peripheral: CBPeripheral) {
+        self.peripheral = peripheral
+        peripheral.delegate = self
+        centralManager.connectPeripheral(peripheral, options: nil)
+    }
+    
+    func handlePoweredOn() {
+        startScan()
+    }
+    
+    func handlePoweredOff() {
+        stopScan()
+    }
+
+    /**
+        Retrieve the list of the service characteristics for observing
+     
+        - parameter service: A peripheral service
+     
+        - returns: The UUID array of the service characteristics
+     */
+    func observedServiceCharacteristics(service: CBService) -> [CBUUID]? {
+        switch Service(rawValue: service.UUID.UUIDString)! {
+        case .HeartRate:
+            return [Characteristic.HeartRateMeasurement.UUID, Characteristic.BodySensorLocation.UUID]
+        case .Battery:
+            return [Characteristic.BatteryLevel.UUID]
+        case .DeviceInformation:
+            return nil
         }
     }
     
@@ -110,8 +171,22 @@ extension HeartRateMonitor : CBPeripheralDelegate {
         }
     }
     
+}
+
+//  MARK: - CBPeripheralDelegate
+
+extension HeartRateMonitor : CBPeripheralDelegate {
+    
+    func peripheral(peripheral: CBPeripheral, didDiscoverServices error: NSError?) {
+        if let services = peripheral.services {
+            for service in services {
+                peripheral.discoverCharacteristics(observedServiceCharacteristics(service), forService: service)
+            }
+        }
+    }
+    
     func peripheral(peripheral: CBPeripheral, didUpdateValueForCharacteristic characteristic: CBCharacteristic, error: NSError?) {
-        switch HeartRateCharacteristic(rawValue: characteristic.UUID.UUIDString)! {
+        switch Characteristic(rawValue: characteristic.UUID.UUIDString)! {
         case .HeartRateMeasurement:
             readPeripheral(peripheral, valueForHeartRateMeasurementCharacteristic: characteristic)
         case .BatteryLevel:
@@ -121,94 +196,31 @@ extension HeartRateMonitor : CBPeripheralDelegate {
         }
     }
     
-    func discoverPeripheral(peripheral: CBPeripheral, characteristicsForHeartRateService service: CBService) {
+    func peripheral(peripheral: CBPeripheral, didDiscoverCharacteristicsForService service: CBService, error: NSError?) {
         if let characteristics = service.characteristics {
             for characteristic in characteristics {
-                switch HeartRateCharacteristic(rawValue: characteristic.UUID.UUIDString)! {
+                switch Characteristic(rawValue: characteristic.UUID.UUIDString)! {
                 case .HeartRateMeasurement:
                     peripheral.setNotifyValue(true, forCharacteristic: characteristic)
                 case .BodySensorLocation:
                     peripheral.readValueForCharacteristic(characteristic)
-                default: break
-                }
-            }
-        }
-    }
-    
-    func discoverPeripheral(peripheral: CBPeripheral, characteristicsForBatteryService service: CBService) {
-        if let characteristics = service.characteristics {
-            for characteristic in characteristics {
-                switch HeartRateCharacteristic(rawValue: characteristic.UUID.UUIDString)! {
                 case .BatteryLevel:
                     peripheral.readValueForCharacteristic(characteristic)
-                default: break
                 }
             }
-        }
-    }
-    
-    func discoverPeripheral(peripheral: CBPeripheral, characteristicsForDeviceInfoService service: CBService) {
-        if let characteristics = service.characteristics {
-            for characteristic in characteristics {
-            }
-        }
-    }
-    
-    func peripheral(peripheral: CBPeripheral, didDiscoverCharacteristicsForService service: CBService, error: NSError?) {
-        switch ServiceUUID(rawValue: service.UUID.UUIDString)! {
-        case .HeartRate:
-            discoverPeripheral(peripheral, characteristicsForHeartRateService: service)
-        case .DeviceInformation:
-            discoverPeripheral(peripheral, characteristicsForDeviceInfoService: service)
-        case .Battery:
-            discoverPeripheral(peripheral, characteristicsForBatteryService: service)
         }
     }
     
 }
 
+//  MARK: - CBCentralManagerDelegate
+
 extension HeartRateMonitor : CBCentralManagerDelegate {
-    
-    enum ServiceUUID : String, UUIDStringable {
-        case DeviceInformation = "180A"
-        case HeartRate = "180D"
-        case Battery = "180F"
-        static var UUIDS: [CBUUID] {
-            return [
-                DeviceInformation.UUID,
-                HeartRate.UUID,
-                Battery.UUID
-            ]
-        }
-    }
-    
-    func startScan2() {
-        let knownPeripherals = centralManager.retrievePeripheralsWithIdentifiers(peripheralIdentifiers)
-        if knownPeripherals.count > 0 {
-            if let peripheral = knownPeripherals.first {
-                connectToPeripheral(peripheral)
-            }
-        }
-    }
-    
-    func startScan() {
-        centralManager.scanForPeripheralsWithServices(ServiceUUID.UUIDS, options: nil)
-    }
-    
-    func stopScan() {
-        centralManager.stopScan()
-    }
-    
-    func connectToPeripheral(peripheral: CBPeripheral) {
-        self.peripheral = peripheral
-        peripheral.delegate = self
-        centralManager.connectPeripheral(peripheral, options: nil)
-    }
     
     func centralManager(central: CBCentralManager, didConnectPeripheral peripheral: CBPeripheral) {
         print("Connected to \(peripheral.name)")
         peripheralIdentifiers.append(peripheral.identifier)
-        peripheral.discoverServices(ServiceUUID.UUIDS)
+        peripheral.discoverServices(Service.UUIDS)
     }
     
     func centralManager(central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: NSError?) {
@@ -247,14 +259,6 @@ extension HeartRateMonitor : CBCentralManagerDelegate {
         case .Unknown:
             print("Bluetooth.Unknown".localized)
         }
-    }
-    
-    func handlePoweredOn() {
-        startScan()
-    }
-    
-    func handlePoweredOff() {
-        stopScan()
     }
     
 }

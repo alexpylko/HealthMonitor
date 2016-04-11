@@ -21,6 +21,7 @@
 		A6F0C9EB1CB99D0B007D855D /* Podfile in Resources */ = {isa = PBXBuildFile; fileRef = A6F0C9EA1CB99D0B007D855D /* Podfile */; };
 		A6F40CF51CBA8D8200826489 /* UUIDStringable.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F40CF41CBA8D8200826489 /* UUIDStringable.swift */; };
 		A6F40CF71CBB9B7C00826489 /* HeartRateMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F40CF61CBB9B7C00826489 /* HeartRateMonitor.swift */; };
+		A6F40CF91CBC548500826489 /* HeartRateMonitorDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F40CF81CBC548500826489 /* HeartRateMonitorDelegate.swift */; };
 		F3E31FF0BA3D4BCD512983F6 /* Pods_HealthMonitor.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E2528178210EAFD37ACC7BA1 /* Pods_HealthMonitor.framework */; };
 /* End PBXBuildFile section */
 
@@ -64,6 +65,7 @@
 		A6F0C9EA1CB99D0B007D855D /* Podfile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Podfile; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.ruby; };
 		A6F40CF41CBA8D8200826489 /* UUIDStringable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UUIDStringable.swift; sourceTree = "<group>"; };
 		A6F40CF61CBB9B7C00826489 /* HeartRateMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeartRateMonitor.swift; sourceTree = "<group>"; };
+		A6F40CF81CBC548500826489 /* HeartRateMonitorDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = HeartRateMonitorDelegate.swift; sourceTree = "<group>"; };
 		B072335F7E19BC5560B72A88 /* Pods-HealthMonitor.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-HealthMonitor.release.xcconfig"; path = "Pods/Target Support Files/Pods-HealthMonitor/Pods-HealthMonitor.release.xcconfig"; sourceTree = "<group>"; };
 		E2528178210EAFD37ACC7BA1 /* Pods_HealthMonitor.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HealthMonitor.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		E4CD448A441C3BCFB6B2AF14 /* Pods_HealthMonitorUITests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_HealthMonitorUITests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -158,6 +160,7 @@
 				A6F0C9C81CB99BEB007D855D /* Info.plist */,
 				A6F40CF41CBA8D8200826489 /* UUIDStringable.swift */,
 				A6F40CF61CBB9B7C00826489 /* HeartRateMonitor.swift */,
+				A6F40CF81CBC548500826489 /* HeartRateMonitorDelegate.swift */,
 			);
 			path = HealthMonitor;
 			sourceTree = "<group>";
@@ -444,6 +447,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A6F40CF91CBC548500826489 /* HeartRateMonitorDelegate.swift in Sources */,
 				A6F0C9BF1CB99BEB007D855D /* ViewController.swift in Sources */,
 				A6F40CF71CBB9B7C00826489 /* HeartRateMonitor.swift in Sources */,
 				A6F40CF51CBA8D8200826489 /* UUIDStringable.swift in Sources */,
