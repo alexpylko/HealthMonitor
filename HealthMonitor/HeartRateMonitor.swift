@@ -28,8 +28,21 @@ class HeartRateMonitor : NSObject {
     init(delegate: HeartRateMonitorDelegate?) {
         super.init()
         self.delegate = delegate
+        setup()
     }
     
+}
+
+// MARK: - Body sensor location
+
+enum BodySensorLocation : UInt8 {
+    case Other
+    case Chest
+    case Wrist
+    case Finger
+    case Hand
+    case EarLobe
+    case Foot
 }
 
 //  MARK: - CBCentralManagerDelegate
@@ -88,12 +101,12 @@ private extension HeartRateMonitor {
      Used to represent discovered peripheral services
      */
     enum Service : String, UUIDStringable {
-        case DeviceInformation = "180A"
+        case DeviceInfo = "180A"
         case HeartRate = "180D"
         case Battery = "180F"
         static var UUIDS: [CBUUID] {
             return [
-                DeviceInformation.UUID,
+                DeviceInfo.UUID,
                 HeartRate.UUID,
                 Battery.UUID
             ]
@@ -177,13 +190,15 @@ extension HeartRateMonitor : CBPeripheralDelegate {
     }
     
     func peripheral(peripheral: CBPeripheral, didUpdateValueForCharacteristic characteristic: CBCharacteristic, error: NSError?) {
-        switch Characteristic(rawValue: characteristic.UUID.UUIDString)! {
-        case .HeartRateMeasurement:
-            heartRateMeasurementCharacteristicDidChange(characteristic)
-        case .BatteryLevel:
-            batteryLevelCharacteristicDidChange(characteristic)
-        case .BodySensorLocation:
-            bodySensorLocationCharacteristicDidChange(characteristic)
+        if let characteristicType = Characteristic(rawValue: characteristic.UUID.UUIDString) {
+            switch characteristicType {
+            case .HeartRateMeasurement:
+                heartRateMeasurementCharacteristicDidChange(characteristic)
+            case .BatteryLevel:
+                batteryLevelCharacteristicDidChange(characteristic)
+            case .BodySensorLocation:
+                bodySensorLocationCharacteristicDidChange(characteristic)
+            }
         }
     }
     
@@ -195,19 +210,6 @@ extension HeartRateMonitor : CBPeripheralDelegate {
         }
     }
     
-}
-
-
-// MARK: - Body sensor location enumeration
-
-enum BodySensorLocation : UInt8 {
-    case Other
-    case Chest
-    case Wrist
-    case Finger
-    case Hand
-    case EarLobe
-    case Foot
 }
 
 // MARK: - Private methods
@@ -231,14 +233,17 @@ private extension HeartRateMonitor {
      - returns: The UUID array of the service characteristics
      */
     func observedServiceCharacteristics(service: CBService) -> [CBUUID]? {
-        switch Service(rawValue: service.UUID.UUIDString)! {
-        case .HeartRate:
-            return [Characteristic.HeartRateMeasurement.UUID, Characteristic.BodySensorLocation.UUID]
-        case .Battery:
-            return [Characteristic.BatteryLevel.UUID]
-        case .DeviceInformation:
-            return nil
+        if let serviceType = Service(rawValue: service.UUID.UUIDString) {
+            switch serviceType {
+            case .HeartRate:
+                return [Characteristic.HeartRateMeasurement.UUID, Characteristic.BodySensorLocation.UUID]
+            case .Battery:
+                return [Characteristic.BatteryLevel.UUID]
+            case .DeviceInfo:
+                return nil
+            }
         }
+        return nil
     }
 
     /**
@@ -248,12 +253,14 @@ private extension HeartRateMonitor {
      - parameter peripheral: A peripheral
      */
     func discoverServiceCharacteristic(characteristic: CBCharacteristic, forPeripheral peripheral: CBPeripheral) {
-        switch Characteristic(rawValue: characteristic.UUID.UUIDString)! {
-        case .HeartRateMeasurement:
-            peripheral.setNotifyValue(true, forCharacteristic: characteristic)
-        case .BodySensorLocation,
-             .BatteryLevel:
-            peripheral.readValueForCharacteristic(characteristic)
+        if let characteristicType = Characteristic(rawValue: characteristic.UUID.UUIDString) {
+            switch characteristicType {
+            case .HeartRateMeasurement:
+                peripheral.setNotifyValue(true, forCharacteristic: characteristic)
+            case .BodySensorLocation,
+                 .BatteryLevel:
+                peripheral.readValueForCharacteristic(characteristic)
+            }
         }
     }
     
