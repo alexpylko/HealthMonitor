@@ -291,6 +291,11 @@ private extension HeartRateMonitor {
         }
     }
     
+    /**
+     Invoked when a service characteristic updated
+     
+     - parameter characteristic: A service characteristic
+     */
     func didUpdateValueForCharacteristic(characteristic: CBCharacteristic) {
         if let characteristicType = Characteristic(rawValue: characteristic.UUID.UUIDString) {
             switch characteristicType {
@@ -321,6 +326,12 @@ private extension HeartRateMonitor {
         }
     }
     
+    /**
+     Process the change of the body info characteristic
+     
+     - parameter characteristic: A service characteristic
+     - parameter type: A service characteristic type
+     */
     func didChangeBodyInfo(characteristic: CBCharacteristic, ofType type: Characteristic) {
         if let data = characteristic.value {
             if let value = NSString(data: data, encoding:NSUTF8StringEncoding) {

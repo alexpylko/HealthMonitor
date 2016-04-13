@@ -12,32 +12,41 @@ protocol HeartRateMonitorDelegate {
 
     /**
      Tells the device info
+     
+     - parameter deviceInfoValue: The device info value
+     - parameter deviceInfoType: The device info type
      */
-    func didChangeDeviceInfo(value: NSString, ofType type: DeviceInformation)
+    func didChangeDeviceInfo(deviceInfoValue: NSString, ofType deviceInfoType: DeviceInformation)
     
     /**
-     Tells the heart rate (in bpm)
+     Tells the heart rate
+     
+     - parameter heartRateValue: The heart rate in bpm
      */
-    func didChangeHeartRate(value: UInt16)
+    func didChangeHeartRate(heartRateValue: UInt16)
     
     /**
      Tells the battery level
+     
+     - parameter batteryLevelInPercantage: The battery level in percantage from 0% to 100%
      */
-    func didChangeBatteryLevel(value: UInt8)
+    func didChangeBatteryLevel(batteryLevelInPercantage: UInt8)
     
     /**
      Tells the body sensor location
+    
+     - parameter bodySensorLocation: The body sensor location
      */
-    func didChangeBodySensorLocation(value: BodySensorLocation)
+    func didChangeBodySensorLocation(bodySensorLocation: BodySensorLocation)
 }
 
 // Default protocol implementation
 
 extension HeartRateMonitorDelegate {
     
-    func didChangeDeviceInfo(value: NSString, ofType type: DeviceInformation) { }
-    func didChangeHeartRate(value: UInt16) { }
-    func didChangeBatteryLevel(value: UInt8) { }
-    func didChangeBodySensorLocation(value: BodySensorLocation) { }
+    func didChangeDeviceInfo(deviceInfoValue: NSString, ofType deviceInfoType: DeviceInformation) { }
+    func didChangeHeartRate(heartRateValue: UInt16) { }
+    func didChangeBatteryLevel(batteryLevelInPercantage: UInt8) { }
+    func didChangeBodySensorLocation(bodySensorLocation: BodySensorLocation) { }
     
 }

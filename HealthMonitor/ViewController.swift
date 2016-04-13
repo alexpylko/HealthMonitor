@@ -30,20 +30,20 @@ class ViewController: UIViewController {
 
 extension ViewController: HeartRateMonitorDelegate {
     
-    func didChangeDeviceInfo(value: NSString, ofType type: DeviceInformation) {
-        print("Device Info: \(value) bpm of type \(type)")
+    func didChangeDeviceInfo(deviceInfoValue: NSString, ofType deviceInfoType: DeviceInformation) {
+        print("Device Info: \(deviceInfoValue) bpm of type \(deviceInfoType)")
     }
     
-    func didChangeHeartRate(value: UInt16) {
-        print("Heart Rate: \(value) bpm")
+    func didChangeHeartRate(heartRateValue: UInt16) {
+        print("Heart Rate: \(heartRateValue) bpm")
     }
     
-    func didChangeBatteryLevel(value: UInt8) {
-        print("Battery Level: \(value)")
+    func didChangeBatteryLevel(batteryLevelInPercantage: UInt8) {
+        print("Battery Level: \(batteryLevelInPercantage)")
     }
     
-    func didChangeBodySensorLocation(value: BodySensorLocation) {
-        print("Body Sensor Location: \(value)")
+    func didChangeBodySensorLocation(bodySensorLocation: BodySensorLocation) {
+        print("Body Sensor Location: \(bodySensorLocation)")
     }
     
 }
