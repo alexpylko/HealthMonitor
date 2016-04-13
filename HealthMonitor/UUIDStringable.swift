@@ -13,8 +13,6 @@ protocol UUIDStringable : RawRepresentable, Equatable {
     var UUID: CBUUID { get }
     
     func isEqual(uuid: CBUUID) -> Bool
-    
-    static var UUIDS: [CBUUID] { get }
 }
 
 extension UUIDStringable where RawValue == String {
