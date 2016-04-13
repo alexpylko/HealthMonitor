@@ -45,6 +45,17 @@ enum BodySensorLocation : UInt8 {
     case Foot
 }
 
+// MARK: - Device information
+
+enum DeviceInformation {
+    case Unsupported
+    case Manufacturer
+    case ModelNumber
+    case SerialNumber
+    case HardwareRevision
+    case FirmwareRevision
+}
+
 //  MARK: - CBCentralManagerDelegate
 
 extension HeartRateMonitor : CBCentralManagerDelegate {
@@ -190,16 +201,7 @@ extension HeartRateMonitor : CBPeripheralDelegate {
     }
     
     func peripheral(peripheral: CBPeripheral, didUpdateValueForCharacteristic characteristic: CBCharacteristic, error: NSError?) {
-        if let characteristicType = Characteristic(rawValue: characteristic.UUID.UUIDString) {
-            switch characteristicType {
-            case .HeartRateMeasurement:
-                heartRateMeasurementCharacteristicDidChange(characteristic)
-            case .BatteryLevel:
-                batteryLevelCharacteristicDidChange(characteristic)
-            case .BodySensorLocation:
-                bodySensorLocationCharacteristicDidChange(characteristic)
-            }
-        }
+        didUpdateValueForCharacteristic(characteristic)
     }
     
     func peripheral(peripheral: CBPeripheral, didDiscoverCharacteristicsForService service: CBService, error: NSError?) {
@@ -220,9 +222,35 @@ private extension HeartRateMonitor {
      Used to represent interested characteristics of the peripheral services
      */
     enum Characteristic : String, UUIDStringable {
+        
+        // HeartRate Service
         case HeartRateMeasurement = "2A37"
         case BodySensorLocation = "2A38"
+        
+        // UUID array of the heart rate characteristics
+        static var heartRateCharacteristics: [CBUUID] {
+            return [Characteristic.HeartRateMeasurement.UUID, Characteristic.BodySensorLocation.UUID]
+        }
+        
+        // Battery Service
         case BatteryLevel = "2A19"
+
+        // UUID array of the battery level characteristics
+        static var batteryLevelCharacteristics: [CBUUID] {
+            return [Characteristic.BatteryLevel.UUID]
+        }
+        
+        // DeviceInfo Service
+        case Manufacturer = "2A29"
+        case ModelNumber = "2A24"
+        case SerialNumber = "2A25"
+        case HardwareRevision = "2A27"
+        case FirmwareRevision = "2A26"
+        
+        // UUID array of the device info characteristics
+        static var deviceInfoCharacteristics: [CBUUID] {
+            return [Manufacturer.UUID, ModelNumber.UUID, SerialNumber.UUID, HardwareRevision.UUID, FirmwareRevision.UUID]
+        }
     }
     
     /**
@@ -236,11 +264,11 @@ private extension HeartRateMonitor {
         if let serviceType = Service(rawValue: service.UUID.UUIDString) {
             switch serviceType {
             case .HeartRate:
-                return [Characteristic.HeartRateMeasurement.UUID, Characteristic.BodySensorLocation.UUID]
+                return Characteristic.heartRateCharacteristics
             case .Battery:
-                return [Characteristic.BatteryLevel.UUID]
+                return Characteristic.batteryLevelCharacteristics
             case .DeviceInfo:
-                return nil
+                return Characteristic.deviceInfoCharacteristics
             }
         }
         return nil
@@ -257,9 +285,46 @@ private extension HeartRateMonitor {
             switch characteristicType {
             case .HeartRateMeasurement:
                 peripheral.setNotifyValue(true, forCharacteristic: characteristic)
-            case .BodySensorLocation,
-                 .BatteryLevel:
+            default:
                 peripheral.readValueForCharacteristic(characteristic)
+            }
+        }
+    }
+    
+    func didUpdateValueForCharacteristic(characteristic: CBCharacteristic) {
+        if let characteristicType = Characteristic(rawValue: characteristic.UUID.UUIDString) {
+            switch characteristicType {
+            case .HeartRateMeasurement:
+                heartRateMeasurementCharacteristicDidChange(characteristic)
+            case .BatteryLevel:
+                batteryLevelCharacteristicDidChange(characteristic)
+            case .BodySensorLocation:
+                bodySensorLocationCharacteristicDidChange(characteristic)
+            case .Manufacturer,
+                 .ModelNumber,
+                 .SerialNumber,
+                 .HardwareRevision,
+                 .FirmwareRevision:
+                didChangeBodyInfo(characteristic, ofType: characteristicType)
+            }
+        }
+    }
+    
+    func translateCharacteristicToDeviceInfoType(type: Characteristic) -> DeviceInformation {
+        switch type {
+        case .Manufacturer: return DeviceInformation.Manufacturer
+        case .ModelNumber: return DeviceInformation.ModelNumber
+        case .SerialNumber: return DeviceInformation.SerialNumber
+        case .HardwareRevision: return DeviceInformation.HardwareRevision
+        case .FirmwareRevision: return DeviceInformation.FirmwareRevision
+        default: return .Unsupported
+        }
+    }
+    
+    func didChangeBodyInfo(characteristic: CBCharacteristic, ofType type: Characteristic) {
+        if let data = characteristic.value {
+            if let value = NSString(data: data, encoding:NSUTF8StringEncoding) {
+                delegate?.didChangeDeviceInfo(value, ofType: translateCharacteristicToDeviceInfoType(type))
             }
         }
     }
@@ -278,7 +343,7 @@ private extension HeartRateMonitor {
             } else {
                 bpm = UInt16(bytes[1])
             }
-            delegate?.didChangeHeartRate?(bpm!)
+            delegate?.didChangeHeartRate(bpm!)
         }
     }
     
@@ -291,7 +356,7 @@ private extension HeartRateMonitor {
         if let data = characteristic.value {
             var bytes = data.arrayOfBytes()
             let batteryLevel  = bytes[0]
-            delegate?.didChangeBatteryLevel?(batteryLevel)
+            delegate?.didChangeBatteryLevel(batteryLevel)
         }
     }
 
@@ -303,8 +368,9 @@ private extension HeartRateMonitor {
     func bodySensorLocationCharacteristicDidChange(characteristic: CBCharacteristic) {
         if let data = characteristic.value {
             var bytes = data.arrayOfBytes()
-            let location = bytes[0]
-            delegate?.didChangeBodySensorLocation?(location)
+            if let location = BodySensorLocation(rawValue: bytes[0]) {
+                delegate?.didChangeBodySensorLocation(location)
+            }
         }
     }
     

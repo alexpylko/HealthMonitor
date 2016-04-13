@@ -8,20 +8,36 @@
 
 import Foundation
 
-@objc protocol HeartRateMonitorDelegate {
+protocol HeartRateMonitorDelegate {
+
+    /**
+     Tells the device info
+     */
+    func didChangeDeviceInfo(value: NSString, ofType type: DeviceInformation)
     
     /**
      Tells the heart rate (in bpm)
      */
-    optional func didChangeHeartRate(value: UInt16)
+    func didChangeHeartRate(value: UInt16)
     
     /**
      Tells the battery level
      */
-    optional func didChangeBatteryLevel(value: UInt8)
+    func didChangeBatteryLevel(value: UInt8)
     
     /**
      Tells the body sensor location
      */
-    optional func didChangeBodySensorLocation(value: UInt8)
+    func didChangeBodySensorLocation(value: BodySensorLocation)
+}
+
+// Default protocol implementation
+
+extension HeartRateMonitorDelegate {
+    
+    func didChangeDeviceInfo(value: NSString, ofType type: DeviceInformation) { }
+    func didChangeHeartRate(value: UInt16) { }
+    func didChangeBatteryLevel(value: UInt8) { }
+    func didChangeBodySensorLocation(value: BodySensorLocation) { }
+    
 }
