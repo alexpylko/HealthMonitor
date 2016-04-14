@@ -22,13 +22,35 @@ class HeartRateMonitor : NSObject {
     private var centralManager:CBCentralManager!
     
     private var peripheral:CBPeripheral?
+
+    /// The peripheral access key in user defaults
+    private let peripheralIdentifiersKey = "Bluetooth.Peripherals"
     
-    private var peripheralIdentifiers: [NSUUID] = []
+    /// The user defaults
+    private var standardUserDefaults: NSUserDefaults {
+        return NSUserDefaults.standardUserDefaults()
+    }
+    
+    /// The name/identifier dictionary of cached peripherals
+    private var cachedPeripherals: [String:String]? {
+        return standardUserDefaults.objectForKey(peripheralIdentifiersKey) as? [String:String]
+    }
+    
+    /// The UUID list of cached peripherals
+    private var peripheralIdentifiers: [NSUUID]? {
+        return cachedPeripherals?.map { NSUUID(UUIDString: $0.0)! }
+    }
     
     init(delegate: HeartRateMonitorDelegate?) {
         super.init()
         self.delegate = delegate
         setup()
+    }
+    
+    deinit {
+        if let peripheral = self.peripheral {
+            centralManager.cancelPeripheralConnection(peripheral)
+        }
     }
     
 }
@@ -62,7 +84,6 @@ extension HeartRateMonitor : CBCentralManagerDelegate {
     
     func centralManager(central: CBCentralManager, didConnectPeripheral peripheral: CBPeripheral) {
         print("Connected to \(peripheral.name)")
-        peripheralIdentifiers.append(peripheral.identifier)
         peripheral.discoverServices(Service.UUIDS)
     }
     
@@ -80,9 +101,7 @@ extension HeartRateMonitor : CBCentralManagerDelegate {
     }
     
     func centralManager(central: CBCentralManager, didDiscoverPeripheral peripheral: CBPeripheral, advertisementData: [String : AnyObject], RSSI: NSNumber) {
-        print("Discovered \(peripheral.name)")
-        stopScan()
-        connectToPeripheral(peripheral)
+        didConnectPeripheral(peripheral)
     }
     
     func centralManagerDidUpdateState(central: CBCentralManager) {
@@ -125,6 +144,31 @@ private extension HeartRateMonitor {
     }
     
     /**
+     Cache a peripheral name/identifier in key/value dictionary
+     
+     - parameter peripheral: The peripheral
+     */
+    func cachePeripheral(peripheral: CBPeripheral) {
+        var peripherals = cachedPeripherals ??  [String:String]()
+        let identifier = peripheral.identifier.UUIDString
+        let name = peripheral.name ?? identifier
+        peripherals.updateValue(name, forKey: identifier)
+        standardUserDefaults.setObject(peripherals, forKey: peripheralIdentifiersKey)
+        standardUserDefaults.synchronize()
+    }
+    
+    /**
+     Invoked when connected to a peripheral
+     
+     - parameter peripheral: The peripheral
+     */
+    func didConnectPeripheral(peripheral: CBPeripheral) {
+        print("Connected to \(peripheral.name)")
+        cachePeripheral(peripheral)
+        peripheral.discoverServices(Service.UUIDS)
+    }
+    
+    /**
      Set up Central Manager
      */
     func setup() {
@@ -135,7 +179,9 @@ private extension HeartRateMonitor {
      Start peripherals discovering
      */
     func startScan() {
-        centralManager.scanForPeripheralsWithServices(Service.UUIDS, options: nil)
+        if !connectToKnownPeripheral() {
+            centralManager.scanForPeripheralsWithServices(Service.UUIDS, options: nil)
+        }
     }
     
     /**
@@ -151,10 +197,12 @@ private extension HeartRateMonitor {
      - returns: True if a cached peripheral is found, False otherwise
      */
     func connectToKnownPeripheral() -> Bool {
-        let knownPeripherals = centralManager.retrievePeripheralsWithIdentifiers(peripheralIdentifiers)
-        if let peripheral = knownPeripherals.first where knownPeripherals.count > 0 {
-            connectToPeripheral(peripheral)
-            return true
+        if let identifiers = peripheralIdentifiers where identifiers.count > 0 {
+            let knownPeripherals = centralManager.retrievePeripheralsWithIdentifiers(identifiers)
+            if let peripheral = knownPeripherals.first {
+                connectToPeripheral(peripheral)
+                return true
+            }
         }
         return false
     }
