@@ -88,8 +88,10 @@ extension HeartRateMonitor : CBCentralManagerDelegate {
     }
     
     func centralManager(central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: NSError?) {
-        print("Disconnected to \(peripheral.name)")
-        startScan()
+        print("Disconnected \(peripheral.name)")
+        if error != nil {
+            startScan()
+        }
     }
     
     func centralManager(central: CBCentralManager, didFailToConnectPeripheral peripheral: CBPeripheral, error: NSError?) {
@@ -98,6 +100,7 @@ extension HeartRateMonitor : CBCentralManagerDelegate {
     }
     
     func centralManager(central: CBCentralManager, willRestoreState dict: [String : AnyObject]) {
+        print("willRestoreState")
     }
     
     func centralManager(central: CBCentralManager, didDiscoverPeripheral peripheral: CBPeripheral, advertisementData: [String : AnyObject], RSSI: NSNumber) {
