@@ -12,10 +12,17 @@ import RealmSwift
 class HeartRateBeat: Object {
     
     dynamic var timestamp = NSDate().timeIntervalSince1970
-    dynamic var beat: UInt8 = 0
+    dynamic var beat: UInt16 = 0
+    
+    convenience init(beat: UInt16) {
+        self.init()
+        self.beat = beat
+    }
     
     override class func primaryKey() -> String {
         return "timestamp"
     }
     
 }
+
+
