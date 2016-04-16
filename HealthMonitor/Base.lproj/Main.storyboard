@@ -3,6 +3,7 @@
     <dependencies>
         <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="10085"/>
+        <capability name="Constraints to layout margins" minToolsVersion="6.0"/>
     </dependencies>
     <scenes>
         <!--View Controller-->
@@ -16,11 +17,27 @@
                     <view key="view" contentMode="scaleToFill" id="8bC-Xf-vdC">
                         <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="AUJ-Lx-pOo" customClass="LineChartView" customModule="Charts">
+                                <rect key="frame" x="12" y="41" width="574" height="539"/>
+                                <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                            </view>
+                        </subviews>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="custom" customColorSpace="calibratedWhite"/>
+                        <constraints>
+                            <constraint firstItem="AUJ-Lx-pOo" firstAttribute="top" secondItem="y3c-jy-aDJ" secondAttribute="bottom" constant="21" id="3zB-mb-xWk"/>
+                            <constraint firstItem="wfy-db-euE" firstAttribute="top" secondItem="AUJ-Lx-pOo" secondAttribute="bottom" constant="20" id="CX0-xd-S3y"/>
+                            <constraint firstAttribute="trailingMargin" secondItem="AUJ-Lx-pOo" secondAttribute="trailing" constant="-6" id="Lyc-nY-E2y"/>
+                            <constraint firstItem="AUJ-Lx-pOo" firstAttribute="leading" secondItem="8bC-Xf-vdC" secondAttribute="leadingMargin" constant="-8" id="s19-Fp-G8X"/>
+                        </constraints>
                     </view>
+                    <connections>
+                        <outlet property="chartView" destination="AUJ-Lx-pOo" id="BKk-7I-Zy4"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
+            <point key="canvasLocation" x="469" y="375"/>
         </scene>
     </scenes>
 </document>
