@@ -8,10 +8,13 @@
 
 import UIKit
 import CoreBluetooth
+import RealmSwift
 
 class ViewController: UIViewController {
 
     var heartRateMonitor: HeartRateMonitor?
+    
+    lazy var realm:Realm = try! Realm()
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -36,6 +39,10 @@ extension ViewController: HeartRateMonitorDelegate {
     
     func didChangeHeartRate(heartRateValue: UInt16) {
         print("Heart Rate: \(heartRateValue) bpm")
+        let beat = HeartRateBeat(beat: heartRateValue)
+        try! realm.write {
+            realm.add(beat)
+        }
     }
     
     func didChangeBatteryLevel(batteryLevelInPercantage: UInt8) {
