@@ -11,31 +11,47 @@ import CoreBluetooth
 import RealmSwift
 import Charts
 
-class ViewController: UIViewController {
+protocol ControllerState : HeartRateMonitorDelegate {
+    init(controller: ViewController)
+}
 
-    var heartRateMonitor: HeartRateMonitor?
+class BackgroundControllerState : ControllerState {
+
+    var controller: ViewController?
     
-    lazy var realm:Realm = try! Realm()
-    
-    @IBOutlet weak var chartView: LineChartView!
-    
-    var dataSet: LineChartDataSet!
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        setupHeartRateMonitor()
-        setupChart()
-        setData()
+    required init(controller: ViewController) {
+        self.controller = controller
     }
     
-    func setupChart() {
-        chartView.descriptionText = "Heart Rate"
-        chartView.noDataTextDescription = "You need to provide data for the chart."
-        chartView.drawGridBackgroundEnabled = false
-        chartView.dragEnabled = true
-        chartView.pinchZoomEnabled = false
-        chartView.rightAxis.enabled = false
-        chartView.setScaleEnabled(true)
+    private lazy var realm:Realm = try! Realm()
+    
+    func didChangeDeviceInfo(deviceInfoValue: NSString, ofType deviceInfoType: DeviceInformation) {
+        print("Device Info: \(deviceInfoValue) bpm of type \(deviceInfoType)")
+    }
+    
+    func didChangeBatteryLevel(batteryLevelInPercantage: UInt8) {
+        print("Battery Level: \(batteryLevelInPercantage)")
+    }
+    
+    func didChangeBodySensorLocation(bodySensorLocation: BodySensorLocation) {
+        print("Body Sensor Location: \(bodySensorLocation)")
+    }
+    
+    func didChangeHeartRate(heartRateValue: UInt16) {
+        print("Heart Rate Value: \(heartRateValue)")
+        let beat = HeartRateBeat(beat: heartRateValue)
+        try! realm.write {
+            realm.add(beat)
+        }
+    }
+    
+}
+
+class ForegroundControllerState : BackgroundControllerState {
+    
+    required init(controller: ViewController) {
+        super.init(controller: controller)
+        setData()
     }
     
     func setData() {
@@ -51,46 +67,100 @@ class ViewController: UIViewController {
             yVars.append(ChartDataEntry(value: Double(beat.beat), xIndex: i - 1))
         }
         
-        dataSet = LineChartDataSet(yVals: yVars, label: "Data Set")
+        let dataSet = LineChartDataSet(yVals: yVars, label: "Data Set")
         dataSet.lineWidth = 2.0
         dataSet.circleRadius = 1.0
         
         let data = LineChartData(xVals: xVars, dataSets: [dataSet])
-        chartView.data = data
+        controller?.setData(data)
     }
     
-    func setupHeartRateMonitor() {
-        heartRateMonitor = HeartRateMonitor(delegate: self)
-    }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-    }
-    
-}
-
-extension ViewController: HeartRateMonitorDelegate {
-    
-    func didChangeDeviceInfo(deviceInfoValue: NSString, ofType deviceInfoType: DeviceInformation) {
-        print("Device Info: \(deviceInfoValue) bpm of type \(deviceInfoType)")
-    }
-    
-    func didChangeHeartRate(heartRateValue: UInt16) {
-        print("Heart Rate: \(heartRateValue) bpm")
-        guard heartRateValue > 0 else { return }
-        let beat = HeartRateBeat(beat: heartRateValue)
-        try! realm.write {
-            realm.add(beat)
-        }
+    override func didChangeHeartRate(heartRateValue: UInt16) {
+        print("Heart Rate Value: \(heartRateValue)")
+        super.didChangeHeartRate(heartRateValue)
         setData()
     }
     
-    func didChangeBatteryLevel(batteryLevelInPercantage: UInt8) {
-        print("Battery Level: \(batteryLevelInPercantage)")
+}
+
+class ViewController: UIViewController {
+    
+    enum State {
+        case Foreground
+        case Background
+        func isBackground() -> Bool {
+            return self == .Background
+        }
+    }
+
+    var heartRateMonitor = HeartRateMonitor()
+    
+    @IBOutlet weak var chartView: LineChartView!
+    
+    var controllerState: ControllerState?
+    
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        setupChart()
+        setup()
+        setupNotifications()
     }
     
-    func didChangeBodySensorLocation(bodySensorLocation: BodySensorLocation) {
-        print("Body Sensor Location: \(bodySensorLocation)")
+    private var defaultCenter: NSNotificationCenter {
+        return NSNotificationCenter.defaultCenter()
+    }
+    
+    private func setupNotifications() {
+        defaultCenter.addObserver(self, selector: #selector(didEnterBackgroundNotification), name: UIApplicationDidEnterBackgroundNotification, object: nil)
+        defaultCenter.addObserver(self, selector: #selector(didBecomeActive), name: UIApplicationDidBecomeActiveNotification, object: nil)
+    }
+    
+    func didEnterBackgroundNotification() {
+        setState(.Background)
+    }
+    
+    func didBecomeActive() {
+        setState(.Foreground)
+    }
+    
+    private func setupChart() {
+        chartView.descriptionText = "Heart Rate"
+        chartView.noDataTextDescription = "You need to provide data for the chart."
+        chartView.drawGridBackgroundEnabled = false
+        chartView.dragEnabled = true
+        chartView.pinchZoomEnabled = false
+        chartView.rightAxis.enabled = false
+        chartView.setScaleEnabled(true)
+    }
+    
+    private func setup() {
+        setState(.Foreground)
+        heartRateMonitor.start()
+    }
+    
+    private func getControllerState(state: State) -> ControllerState {
+        if state.isBackground() {
+            return BackgroundControllerState(controller: self)
+        }
+        else {
+            return ForegroundControllerState(controller: self)
+        }
+    }
+    
+    func setState(state: State) {
+        controllerState = getControllerState(state)
+        heartRateMonitor.delegate = controllerState
     }
     
 }
+
+//  MARK: - ChartCompatible
+
+extension ViewController : ChartCompatible {
+    
+    func setData(data: ChartData) {
+        chartView.data = data
+    }
+    
+}
+

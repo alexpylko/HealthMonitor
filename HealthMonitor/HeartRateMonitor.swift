@@ -40,10 +40,17 @@ class HeartRateMonitor : NSObject {
     private var peripheralIdentifiers: [NSUUID]? {
         return cachedPeripherals?.map { NSUUID(UUIDString: $0.0)! }
     }
-    
-    init(delegate: HeartRateMonitorDelegate?) {
+
+    override init() {
         super.init()
+    }
+    
+    convenience init(delegate: HeartRateMonitorDelegate?) {
+        self.init()
         self.delegate = delegate
+    }
+    
+    func start() {
         setup()
     }
     
