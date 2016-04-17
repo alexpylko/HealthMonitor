@@ -77,6 +77,7 @@ extension ViewController: HeartRateMonitorDelegate {
     
     func didChangeHeartRate(heartRateValue: UInt16) {
         print("Heart Rate: \(heartRateValue) bpm")
+        guard heartRateValue > 0 else { return }
         let beat = HeartRateBeat(beat: heartRateValue)
         try! realm.write {
             realm.add(beat)
