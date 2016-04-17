@@ -57,10 +57,6 @@ class ForegroundControllerState : BackgroundControllerState {
         setData()
     }
     
-    deinit {
-        chartView.clear()
-    }
-    
     private func setData() {
         let beats = realm.objects(HeartRateBeat).sorted("timestamp", ascending: false)
         let limit = 100
@@ -124,12 +120,15 @@ class ForegroundControllerState : BackgroundControllerState {
 class ViewController: UIViewController {
     
     enum State {
+        case Undefined
         case Foreground
         case Background
         func isBackground() -> Bool {
             return self == .Background
         }
     }
+    
+    var currentState: State = .Undefined
 
     var heartRateMonitor = HeartRateMonitor()
     
@@ -186,8 +185,10 @@ class ViewController: UIViewController {
     }
     
     func setState(state: State) {
+        guard state != currentState else { return }
         controllerState = getControllerState(state)
         heartRateMonitor.delegate = controllerState
+        currentState = state
     }
     
 }
