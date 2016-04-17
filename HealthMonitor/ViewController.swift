@@ -57,6 +57,10 @@ class ForegroundControllerState : BackgroundControllerState {
         setData()
     }
     
+    deinit {
+        chartView.clear()
+    }
+    
     private func setData() {
         let beats = realm.objects(HeartRateBeat).sorted("timestamp", ascending: false)
         let limit = 100
@@ -77,7 +81,12 @@ class ForegroundControllerState : BackgroundControllerState {
         let data = LineChartData(xVals: xVars, dataSets: [dataSet])
         controller?.setData(data)
     }
-    
+
+    /**
+     Update the chart with a new heart rate value
+     
+     - prameter heartRateValue: The new heart rate value
+     */
     private func updateDataWithHeartRate(heartRateValue: UInt16) {
         setData()
     }
@@ -131,7 +140,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupChart()
-        setup()
+        setupState()
         setupNotifications()
     }
     
@@ -162,7 +171,7 @@ class ViewController: UIViewController {
         chartView.setScaleEnabled(true)
     }
     
-    private func setup() {
+    private func setupState() {
         setState(.Foreground)
         heartRateMonitor.start()
     }
