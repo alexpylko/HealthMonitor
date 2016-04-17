@@ -49,12 +49,15 @@ class BackgroundControllerState : ControllerState {
 
 class ForegroundControllerState : BackgroundControllerState {
     
+    weak var chartView: LineChartView!
+    
     required init(controller: ViewController) {
         super.init(controller: controller)
+        chartView = controller.chartView
         setData()
     }
     
-    func setData() {
+    private func setData() {
         let beats = realm.objects(HeartRateBeat).sorted("timestamp", ascending: false)
         let limit = 100
         let size = min(100, beats.count)
@@ -75,10 +78,36 @@ class ForegroundControllerState : BackgroundControllerState {
         controller?.setData(data)
     }
     
+    private func updateDataWithHeartRate(heartRateValue: UInt16) {
+        setData()
+    }
+    
+    /**
+        Update the chart with a new heart rate value
+     
+        - prameter heartRateValue: The new heart rate value
+     
+        IMPORTANT: By some reason the functionlity bellow doesn't work
+    */
+    private func altUpdateDataWithHeartRate(heartRateValue: UInt16) {
+        if let data = chartView.data {
+            let dataSet = data.getDataSetByIndex(0)
+            
+            dataSet.removeFirst()
+            chartView.notifyDataSetChanged()
+            
+            dataSet.addEntry(ChartDataEntry(value: Double(heartRateValue), xIndex: dataSet.entryCount))
+            chartView.notifyDataSetChanged()
+            
+            chartView.setVisibleXRangeMaximum(100)
+            chartView.moveViewTo(xIndex: CGFloat(data.xValCount - 101), yValue: Double(50), axis: ChartYAxis.AxisDependency.Right)
+        }
+    }
+    
     override func didChangeHeartRate(heartRateValue: UInt16) {
         print("Heart Rate Value: \(heartRateValue)")
         super.didChangeHeartRate(heartRateValue)
-        setData()
+        updateDataWithHeartRate(heartRateValue)
     }
     
 }
