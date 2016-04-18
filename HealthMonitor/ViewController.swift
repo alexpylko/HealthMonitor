@@ -57,15 +57,28 @@ class ForegroundControllerState : BackgroundControllerState {
         setData()
     }
     
+    /**
+     Calculate max numbers of visible points on the chart
+     
+     - returns: max numbers of visible points
+     
+     TODO: implement the calculation depending on screen size and orientation
+     */
+    private var maxNumberOfPoints: Int {
+        return 100
+    }
+
+    /**
+     Apply data on chart
+     */
     private func setData() {
         let beats = realm.objects(HeartRateBeat).sorted("timestamp", ascending: false)
-        let limit = 100
-        let size = min(100, beats.count)
+        let size = min(maxNumberOfPoints, beats.count)
         
         var xVars = [String]()
         var yVars = [ChartDataEntry]()
         for i in 1...size {
-            let beat = beats[limit - i]
+            let beat = beats[size - i]
             xVars.append(String(beat.timestamp))
             yVars.append(ChartDataEntry(value: Double(beat.beat), xIndex: i - 1))
         }
@@ -92,7 +105,7 @@ class ForegroundControllerState : BackgroundControllerState {
      
         - prameter heartRateValue: The new heart rate value
      
-        IMPORTANT: By some reason the functionlity bellow doesn't work
+        TODO: By some reason the functionlity bellow doesn't work
     */
     private func altUpdateDataWithHeartRate(heartRateValue: UInt16) {
         if let data = chartView.data {
