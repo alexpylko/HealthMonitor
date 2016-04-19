@@ -13,6 +13,7 @@ class HeartRateBeat: Object {
     
     dynamic var timestamp = NSDate().timeIntervalSince1970
     dynamic var beat: Int32 = 0
+    dynamic var device: Device?
     
     convenience init(beat: UInt16) {
         self.init()

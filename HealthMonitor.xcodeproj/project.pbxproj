@@ -12,6 +12,7 @@
 		A62E7D7D1CC404F80068C80E /* ChartCompatible.swift in Sources */ = {isa = PBXBuildFile; fileRef = A62E7D7C1CC404F80068C80E /* ChartCompatible.swift */; };
 		A6343F721CBA512000325D0A /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = A6343F711CBA512000325D0A /* Localizable.strings */; };
 		A6343F741CBA516300325D0A /* StringExtension.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6343F731CBA516300325D0A /* StringExtension.swift */; };
+		A66396DE1CC62EF400D659B0 /* Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = A66396DD1CC62EF400D659B0 /* Device.swift */; };
 		A6F0C9BD1CB99BEB007D855D /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F0C9BC1CB99BEB007D855D /* AppDelegate.swift */; };
 		A6F0C9BF1CB99BEB007D855D /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6F0C9BE1CB99BEB007D855D /* ViewController.swift */; };
 		A6F0C9C21CB99BEB007D855D /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = A6F0C9C01CB99BEB007D855D /* Main.storyboard */; };
@@ -53,6 +54,7 @@
 		A62E7D7C1CC404F80068C80E /* ChartCompatible.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ChartCompatible.swift; sourceTree = "<group>"; };
 		A6343F711CBA512000325D0A /* Localizable.strings */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; path = Localizable.strings; sourceTree = "<group>"; };
 		A6343F731CBA516300325D0A /* StringExtension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = StringExtension.swift; sourceTree = "<group>"; };
+		A66396DD1CC62EF400D659B0 /* Device.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
 		A6F0C9B91CB99BEB007D855D /* HealthMonitor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HealthMonitor.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A6F0C9BC1CB99BEB007D855D /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A6F0C9BE1CB99BEB007D855D /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
@@ -170,6 +172,7 @@
 				A6F40CFA1CBDB7E600826489 /* NSDataExtension.swift */,
 				A6F40CFF1CC061C500826489 /* HeartRateBeat.swift */,
 				A62E7D7C1CC404F80068C80E /* ChartCompatible.swift */,
+				A66396DD1CC62EF400D659B0 /* Device.swift */,
 			);
 			path = HealthMonitor;
 			sourceTree = "<group>";
@@ -465,6 +468,7 @@
 				A6F40CFB1CBDB7E600826489 /* NSDataExtension.swift in Sources */,
 				A6F0C9BD1CB99BEB007D855D /* AppDelegate.swift in Sources */,
 				A6343F741CBA516300325D0A /* StringExtension.swift in Sources */,
+				A66396DE1CC62EF400D659B0 /* Device.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

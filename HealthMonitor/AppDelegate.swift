@@ -24,7 +24,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     
     func realmMigration() {
         let config = Realm.Configuration(
-            schemaVersion: 28,
+            schemaVersion: 29,
             migrationBlock: { migration, oldSchemaVersion in
             }
         )
