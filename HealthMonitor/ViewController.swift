@@ -97,28 +97,14 @@ class ForegroundControllerState : BackgroundControllerState {
      - prameter heartRateValue: The new heart rate value
      */
     private func updateDataWithHeartRate(heartRateValue: UInt16) {
-        setData()
-    }
-    
-    /**
-        Update the chart with a new heart rate value
-     
-        - prameter heartRateValue: The new heart rate value
-     
-        TODO: By some reason the functionlity bellow doesn't work
-    */
-    private func altUpdateDataWithHeartRate(heartRateValue: UInt16) {
         if let data = chartView.data {
-            let dataSet = data.getDataSetByIndex(0)
-            
-            dataSet.removeFirst()
-            chartView.notifyDataSetChanged()
-            
-            dataSet.addEntry(ChartDataEntry(value: Double(heartRateValue), xIndex: dataSet.entryCount))
-            chartView.notifyDataSetChanged()
-            
-            chartView.setVisibleXRangeMaximum(100)
-            chartView.moveViewTo(xIndex: CGFloat(data.xValCount - 101), yValue: Double(50), axis: ChartYAxis.AxisDependency.Right)
+            let dataSetIndex = 0
+            if let dataSet = data.getDataSetByIndex(dataSetIndex) {
+                data.addEntry(ChartDataEntry(value: Double(heartRateValue), xIndex: dataSet.entryCount), dataSetIndex: dataSetIndex)
+                data.addXValue("\(NSDate().timeIntervalSince1970)")
+                data.removeEntryByXIndex(0, dataSetIndex: dataSetIndex)
+                chartView.notifyDataSetChanged()
+            }
         }
     }
     
